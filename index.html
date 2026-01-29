@@ -1,1 +1,53 @@
-This is created for my 1st file again...
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pad Warehouse Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; text-align: center; background: #f0f2f5; }
+        #reader { width: 100%; max-width: 500px; margin: auto; background: white; }
+        #result-log { margin-top: 20px; background: white; padding: 15px; border-radius: 8px; text-align: left; height: 200px; overflow-y: scroll; }
+        .success { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h2>Scan to Record</h2>
+    <div id="reader"></div>
+    
+    <div id="result-log">
+        <strong>Scan Log:</strong>
+        <ul id="scanList"></ul>
+    </div>
+
+    <button onclick="localStorage.removeItem('scans'); location.reload();" style="margin-top:10px; padding:10px; background:#dc3545; color:white; border:none; border-radius:5px;">Clear Log</button>
+
+    <script>
+        const scanList = document.getElementById('scanList');
+
+        // Load previous scans from memory
+        const savedScans = JSON.parse(localStorage.getItem('scans')) || [];
+        savedScans.forEach(text => addToList(text));
+
+        function addToList(text) {
+            const li = document.createElement('li');
+            li.textContent = `${new Date().toLocaleTimeString()} - ${text}`;
+            scanList.prepend(li);
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Add to list and save to browser memory
+            addToList(decodedText);
+            savedScans.push(decodedText);
+            localStorage.setItem('scans', JSON.stringify(savedScans));
+            
+            // Optional: Vibrate the pad on success
+            if (navigator.vibrate) navigator.vibrate(200);
+        }
+
+        // Initialize the scanner
+        let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html>
